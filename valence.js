@@ -100,12 +100,10 @@ function log(title, err, data) {
  *   Index of desired grade in data.grades 
  **/
 function searchGradesById(gradeId) {
-    for (var i = 0; i < data.grades.length; ++i) {
-        if (data.grades[i].gradeID == gradeId) {
-            return i;
-        }
-    }
-
+        data.grades.forEach(function(grade, index){
+            if (grade.gradeID == gradeId)
+                return index;
+        })
     return null;
 }
 
@@ -118,12 +116,10 @@ function searchGradesById(gradeId) {
  *   Index of desired category in data.categories 
  **/
 function searchCategoriesById(catId) {
-    for (var i = 0; i < data.categories.length; ++i) {
-        if (data.categories[i].catID == catId) {
-            return i;
-        }
-    }
-
+    data.categories.forEach(function(category, index) {
+        if (category.catID == catId)
+            return index;
+    })
     return null;
 }
 
@@ -154,27 +150,14 @@ function extend(target, objectToCopy){
  **/
 function makeDataWrapper() {
     return {
-        getCourseName: function () {
-            return data.courseName;
-        },
-        getCourseID: function () {
-            return data.orgUnitId;
-        },
-        getFirstName: function () {
-            return data.firstName;
-        },
-        getLastName: function () {
-            return data.lastName;
-        },
-        getGrades: function () {
-            return data.grades;
-        },
-        getCategories: function () {
-            return data.categories;
-        },
-        getFinalCalculatedGrade: function() {
-            return data.finalCalculatedGrade;
-        }
+        getCourseName: data.courseName,
+        getCourseID: data.orgUnitId,
+        getFirstName: data.firstName,
+        getLastName: data.lastName,
+        getGrades: data.grades,
+        getCategories: data.categories,
+        getFinalCalculatedGrade: data.finalCalculatedGrade;
+
     }
 }
 
@@ -260,6 +243,7 @@ function run(callback) {
                                 var grades = res.body;
 
                                 // Gather information from all grade objects
+                                                                /*
                                 for (var i = 0; i < grades.length; ++i) {
                                     data.grades[i] = extend({}, grade);
 
@@ -273,6 +257,18 @@ function run(callback) {
                                     data.grades[i].description                      = grades[i].Description;
                                     data.grades[i].gradeType                        = grades[i].GradeType;
                                 }
+                                */
+                                grades.forEach(function(grade, index) {
+                                data.grades[index] = extend({}, grade);
+                                    
+                                    data.grades[index].excludeFromFinalGradeCalculation = grade.excludeFromFinalGradeCalculation;
+                                    data.grades[index].maxPoints                        = grade.MaxPoints;
+                                    data.grades[index].gradeName                        = grade.Name;
+                                    data.grades[index].gradeShortName                   = grade.ShortName;
+                                    data.grades[index].gradeID                          = grade.Id; data.grades[index].catID                            = grade.CategoryId;
+                                    data.grades[index].weight                           = grade.Weight;           data.grades[index].description                      = grade.Description;
+                                    data.grades[index].gradeType                        = grade.GradeType;
+                                })
 
                                 request
                                     .get('/d2l/api/le/1.5/' + data.orgUnitId + '/grades/values/myGradeValues/')
@@ -284,7 +280,7 @@ function run(callback) {
                                             var grades = res.body;
 
                                             // Gather more information about the grade objects that have grade values
-                                            for (var i = 0; i < grades.length; ++i) {
+                                            /*for (var i = 0; i < grades.length; ++i) {
                                                 var index = searchGradesById(grades[i].GradeObjectIdentifier);
 
                                                 if (index !== null) {
@@ -293,7 +289,28 @@ function run(callback) {
                                                     data.grades[index].weightedDenominator = grades[i].WeightedDenominator;
                                                     data.grades[index].weightedNumerator   = grades[i].WeightedNumerator;
                                                     data.grades[index].isGraded            = true;
-                                                } else {
+                                                }*/
+                                                grades.forEach(function (grade, index) {
+                                                    var indexId = searchGradesById(grade.GradeObjectIdentifier);
+                                                    if (indexId) {
+                                                        data.grades[index].pointsDenominator = grade.PointsDenominator;
+                                                        data.grades[index].pointsNumerator   =
+                                                        grade.PointsNumerator;
+                                                        data.grades[index].weightedDenominator = 
+                                                        grade.WeightedDenominator;
+                                                        data.grades[index].weightedNumerator   =
+                                                        grade.WeightedNumerator;
+                                                        data.grades[index].isGraded            = true;
+                                                 }   
+                                                  else {/*Keep working from Here*/ 
+                                                  indexId = searchCategoriesById(grade.GradeObjectIdentifier);
+                                                  if (indexId) {
+                                                        data.categories[index].grade = extend({}, grade);
+                                                      
+                                                  }  
+                                                    
+                                                })                                            
+                                                else {
                                                     index = searchCategoriesById(grades[i].GradeObjectIdentifier);
                                                     
                                                     if (index !== null) {
