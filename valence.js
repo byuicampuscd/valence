@@ -172,7 +172,7 @@ function makeDataWrapper() {
  * RETURN:
  *   NOTHING
  **/
-function run(callback) {
+function run(callback, debug) {
     /********************* END FUNCTION *********************/
     
     /**
@@ -184,6 +184,11 @@ function run(callback) {
      * Return:
      *    NOTHING
      **/
+	if(debug !== undefined && debug == true)
+        	debugMode = true;
+    	else
+	        debugMode = false;
+	
     function finalize(err, res) {
         var i,
             j;
