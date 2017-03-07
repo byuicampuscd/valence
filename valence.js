@@ -1,5 +1,49 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.valence = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"/module.js":[function(require,module,exports){
-module.exports = (function () {
+(function (f) {
+    if (typeof exports === "object" && typeof module !== "undefined") {
+        module.exports = f()
+    } else if (typeof define === "function" && define.amd) {
+        define([], f)
+    } else {
+        var g;
+        if (typeof window !== "undefined") {
+            g = window
+        } else if (typeof global !== "undefined") {
+            g = global
+        } else if (typeof self !== "undefined") {
+            g = self
+        } else {
+            g = this
+        }
+        g.valence = f()
+    }
+})(function () {
+        var define, module, exports;
+        return (function e(t, n, r) {
+                function s(o, u) {
+                    if (!n[o]) {
+                        if (!t[o]) {
+                            var a = typeof require == "function" && require;
+                            if (!u && a) return a(o, !0);
+                            if (i) return i(o, !0);
+                            var f = new Error("Cannot find module '" + o + "'");
+                            throw f.code = "MODULE_NOT_FOUND", f
+                        }
+                        var l = n[o] = {
+                            exports: {}
+                        };
+                        t[o][0].call(l.exports, function (e) {
+                            var n = t[o][1][e];
+                            return s(n ? n : e)
+                        }, l, l.exports, e, t, n, r)
+                    }
+                    return n[o].exports
+                }
+                var i = typeof require == "function" && require;
+                for (var o = 0; o < r.length; o++) s(r[o]);
+                return s
+            })({
+                    "/module.js": [function (require, module, exports) {
+                                module.exports = (function () {
 /********************* VARIABLES *********************/
 
 /*
@@ -262,18 +306,41 @@ function run(callback, debug) {
                                     data.grades[i].description                      = grades[i].Description;
                                     data.grades[i].gradeType                        = grades[i].GradeType;
                                 }
+                                
+                                
+                                 gradeID: "",                            // The ID of the grade object
+        gradeName: "",                          // The name of the grade object
+        gradeShortName: "",                     // The short version of the name of the grade object
+        catID: "",                              // The ID of the category that the grade falls in. Should either equal 0 or a catID in a category in the data.categories array.
+        maxPoints: null,                        // The maximum number of points that a grade can have.
+        weight: null,                           // This is the percentage the grade contributes to the category or, if it doesn't have a category (i.e. catID == 0), final grade.
+        excludeFromFinalGradeCalculation: null, // Do we exclude this item from the calculation of the final grade?
+        pointsDenominator: null,                // Denominator of the points earned without weight
+        pointsNumerator: null,                  // Numerator of the points earned without weight
+        weightedDenominator: null,              // Denominator of the points earned with weight
+        weightedNumerator: null,                // Numerator of the points earned with weight
+        description: "",                        // The description of the grade
+        gradeType: "",                           // The grade type. Options can be: "Numeric," "Selectbox," "Pass/Fail," "Formula," "Calculated," "Text"
+        isGraded: false
                                 */
-                                grades.forEach(function(grade, index) {
-                                data.grades[index] = extend({}, grade);
+                                
+                                /*use a map, replace nonexstiant object values with a null or a default value, */
+                                data.grades = grades.map(function(grade) {
+                                //data.grades[index] = extend({}, grade);
                                     
-                                    data.grades[index].excludeFromFinalGradeCalculation = grade.excludeFromFinalGradeCalculation;
-                                    data.grades[index].maxPoints                        = grade.MaxPoints;
-                                    data.grades[index].gradeName                        = grade.Name;
-                                    data.grades[index].gradeShortName                   = grade.ShortName;
-                                    data.grades[index].gradeID                          = grade.Id; data.grades[index].catID                            = grade.CategoryId;
-                                    data.grades[index].weight                           = grade.Weight;           data.grades[index].description                      = grade.Description;
-                                    data.grades[index].gradeType                        = grade.GradeType;
-                                })
+                                    return { 
+                                    excludeFromFinalGradeCalculation : grade.excludeFromFinalGradeCalculation || null,
+                                    maxPoints                        : grade.MaxPoints || 0,
+                                    gradeName                        : grade.Name,
+                                    gradeShortName                   : grade.ShortName,
+                                    gradeID                          : grade.Id,
+                                    catID                            : grade.CategoryId,
+                                    weight                           : grade.Weight,
+                                    description                      : grade.Description,
+                                    gradeType                        : grade.GradeType,
+                                    isGraded                        : false                                            
+                                    };                                    
+                                });
 
                                 request
                                     .get('/d2l/api/le/1.5/' + data.orgUnitId + '/grades/values/myGradeValues/')
@@ -298,8 +365,8 @@ function run(callback, debug) {
                                                 grades.forEach(function (grade, index) {
                                                     var indexId = searchGradesById(grade.GradeObjectIdentifier);
                                                     if (indexId) {
-                                                        data.grades[index].pointsDenominator = grade.PointsDenominator;
-                                                        data.grades[index].pointsNumerator   =
+                                                        data.grades[index].pointsDenominator   = grade.PointsDenominator;
+                                                        data.grades[index].pointsNumerator     =
                                                         grade.PointsNumerator;
                                                         data.grades[index].weightedDenominator = 
                                                         grade.WeightedDenominator;
@@ -307,36 +374,27 @@ function run(callback, debug) {
                                                         grade.WeightedNumerator;
                                                         data.grades[index].isGraded            = true;
                                                  }   
-                                                  else {/*Keep working from Here*/ 
+                                                  else {
                                                   indexId = searchCategoriesById(grade.GradeObjectIdentifier);
                                                   if (indexId) {
-                                                        data.categories[index].grade = extend({}, grade);
-                                                      
+                                                        data.categories[index].grade                                    = extend({}, grade);
+                                                        data.categories[index].grade.catID                              = grades[i].GradeObjectIdentifier;
+                                                        data.categories[indexId].grade.gradeType                        = grade.GradeObjectTypeName;
+                                                        data.categories[indexId].grade.gradeID                          = grade.GradeObjectIdentifier;
+                                                        data.categories[indexId].grade.gradeName                        = grade.GradeObjectName;
+                                                        data.categories[indexId].grade.pointsDenominator                = grade.PointsDenominator;
+                                                        data.categories[indexId].grade.pointsNumerator                  = grade.PointsNumerator;
+                                                        data.categories[indexId].grade.weightedDenominator              = grade.WeightedDenominator;
+                                                        data.categories[indexId].grade.weightedNumerator                = grade.WeightedNumerator;
+                                                        data.categories[indexId].grade.excludeFromFinalGradeCalculation = data.categories[indexId].excludeFromFinalGrade;
+                                                        data.categories[indexId].grade.weight                           = data.categories[indexId].weight;
+                                                        data.categories[indexId].grade.maxPoints                        = data.categories[indexId].maxPoints;
+                                                        data.categories[indexId].grade.isGraded                         = true; 
                                                   }  
                                                     
-                                                })                                            
-                                                else {
-                                                    index = searchCategoriesById(grades[i].GradeObjectIdentifier);
-                                                    
-                                                    if (index !== null) {
-                                                        data.categories[index].grade = extend({}, grade);
-                                                        
-                                                        data.categories[index].grade.catID                            = grades[i].GradeObjectIdentifier;
-                                                        data.categories[index].grade.gradeType                        = grades[i].GradeObjectTypeName;
-                                                        data.categories[index].grade.gradeID                          = grades[i].GradeObjectIdentifier;
-                                                        data.categories[index].grade.gradeName                        = grades[i].GradeObjectName;
-                                                        data.categories[index].grade.pointsDenominator                = grades[i].PointsDenominator;
-                                                        data.categories[index].grade.pointsNumerator                  = grades[i].PointsNumerator;
-                                                        data.categories[index].grade.weightedDenominator              = grades[i].WeightedDenominator;
-                                                        data.categories[index].grade.weightedNumerator                = grades[i].WeightedNumerator;
-                                                        data.categories[index].grade.excludeFromFinalGradeCalculation = data.categories[index].excludeFromFinalGrade;
-                                                        data.categories[index].grade.weight                           = data.categories[index].weight;
-                                                        data.categories[index].grade.maxPoints                        = data.categories[index].maxPoints;
-                                                        data.categories[index].grade.isGraded                         = true;
-                                                        /* Only missing the description. Categories don't have descriptions, so that's okay. */
-                                                    }
                                                 }
-                                            }
+                                                })                                            
+                                            
 
                                             asyncCallback(null, data.grades);
                                         } else {
@@ -360,6 +418,7 @@ function run(callback, debug) {
                                 var cats = res.body;
 
                                 // Gather each category's information
+                                /*
                                 for (var i = 0; i < cats.length; ++i) {
                                     data.categories[i] = extend({}, category);
                                     
@@ -368,8 +427,15 @@ function run(callback, debug) {
                                     data.categories[i].excludeFromFinalGrade = cats[i].ExcludeFromFinalGrade;
                                     data.categories[i].maxPoints             = cats[i].MaxPoints;
                                     data.categories[i].weight                = cats[i].Weight;
+                                }*/
+                                
+                                cats.forEach(category, index) {
+                                    data.categories[index].catName               = category.Name;
+                                    data.categories[index].catID                 = category.Id;
+                                    data.categories[index].excludeFromFinalGrade = category.ExcludeFromFinalGrade;
+                                    data.categories[index].maxPoints             = category.MaxPoints;
+                                    data.categories[index].weight                = category.Weight;
                                 }
-                            
                                 asyncCallback(null, data.categories);
                             } else {
                                 asyncCallback(null, null);
@@ -385,7 +451,7 @@ function run(callback, debug) {
                         
                             if (!err) {
                                 var finalCalculatedGrade = res.body;
-                                
+                                /*Something feels off about this chunk, maybe the parameter declaration of "grade" is making me nervous */
                                 data.finalCalculatedGrade = extend({}, grade);
                                 
                                 data.finalCalculatedGrade.pointsDenominator   = finalCalculatedGrade.PointsDenominator;
@@ -489,8 +555,6 @@ function runTimeout(fun) {
             return cachedSetTimeout.call(this, fun, 0);
         }
     }
-
-
 }
 function runClearTimeout(marker) {
     if (cachedClearTimeout === clearTimeout) {
@@ -584,6 +648,7 @@ function Item(fun, array) {
 Item.prototype.run = function () {
     this.fun.apply(null, this.array);
 };
+
 process.title = 'browser';
 process.browser = true;
 process.env = {};
@@ -11968,3 +12033,4 @@ arguments[4][36][0].apply(exports,arguments)
 arguments[4][37][0].apply(exports,arguments)
 },{"dup":37}]},{},[])("/module.js")
 });
+
